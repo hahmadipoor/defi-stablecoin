@@ -13,19 +13,20 @@ contract HelperConfig is Script {
     int256 public constant BTC_USD_PRICE = 1000e8;
 
     struct NetworkConfig {
-        address wethUsdPriceFeed;
-        address wbtcUsdPriceFeed;
-        address weth;
-        address wbtc;
-        uint256 deployerKey;
+        address wethUsdPriceFeed; // The address of Chainlink priceFeed contract for weth
+        address wbtcUsdPriceFeed; // The address of Chainlink priceFeed contract for wbtc
+        address weth; // The address of weth contract on Sepolia
+        address wbtc; // The address of weth contract on Sepolia 
+        uint256 deployerKey; // Deployer private key; in case of sepolia, we use our address from metamask, 
+                             // but in case of localhost we deploy the mock contracts and use their addresses 
     }
 
     uint256 public DEFAULT_ANVIL_PRIVATE_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
     constructor() {
-        if (block.chainid == 11_155_111) {
+        if (block.chainid == 11_155_111) { 
             activeNetworkConfig = getSepoliaEthConfig();
-        } else {
+        } else { 
             activeNetworkConfig = getOrCreateAnvilEthConfig();
         }
     }
@@ -45,15 +46,12 @@ contract HelperConfig is Script {
         if (activeNetworkConfig.wethUsdPriceFeed != address(0)) {
             return activeNetworkConfig;
         }
-
         vm.startBroadcast();
         MockV3Aggregator ethUsdPriceFeed = new MockV3Aggregator(DECIMALS, ETH_USD_PRICE);
         ERC20Mock wethMock = new ERC20Mock();
-
         MockV3Aggregator btcUsdPriceFeed = new MockV3Aggregator(DECIMALS, BTC_USD_PRICE);
         ERC20Mock wbtcMock = new ERC20Mock();
         vm.stopBroadcast();
-
         anvilNetworkConfig = NetworkConfig({
             wethUsdPriceFeed: address(ethUsdPriceFeed), // ETH / USD
             weth: address(wethMock),
